@@ -3,22 +3,18 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Circuito RL – Ecuación Diferencial</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuito RL – EDO Primer Orden</title>
 
 <style>
 body{
   margin:0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, sans-serif;
   background:#ffffff;
-  color:#000000;
+  color:#000;
 }
 header{
   padding:20px;
-  border-bottom:2px solid #e5e7eb;
-}
-h1,h2,h3{
-  margin:0 0 10px 0;
+  border-bottom:2px solid #ddd;
 }
 .container{
   max-width:1200px;
@@ -26,49 +22,69 @@ h1,h2,h3{
   padding:20px;
 }
 .card{
-  border:1px solid #d1d5db;
-  border-radius:8px;
+  border:1px solid #ccc;
   padding:20px;
+  border-radius:8px;
   margin-bottom:20px;
 }
 .layout{
   display:grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns:1fr 1.2fr;
   gap:20px;
 }
 label{
-  font-size:14px;
+  display:block;
+  margin-top:10px;
 }
 input{
   width:100%;
   padding:8px;
-  margin-top:4px;
-  margin-bottom:12px;
 }
 button{
-  padding:10px 16px;
+  margin-top:15px;
+  padding:10px;
   background:#2563eb;
-  color:white;
+  color:#fff;
   border:none;
-  border-radius:6px;
   font-weight:bold;
+  border-radius:5px;
   cursor:pointer;
 }
 canvas{
   width:100%;
-  height:320px;
-  border:1px solid #cbd5f5;
-  border-radius:6px;
+  height:350px;
+  border:1px solid #999;
 }
-.note{
-  font-size:14px;
-  color:#374151;
+.resistor-box{
+  background:#f5f5f5;
+  padding:15px;
+  border-left:6px solid #2563eb;
 }
-.resistencia-box{
-  padding:12px;
-  background:#f8fafc;
-  border-left:5px solid #2563eb;
-  font-size:15px;
+.resistor{
+  display:flex;
+  align-items:center;
+  margin:15px 0;
+}
+.resistor .wire{
+  width:30px;
+  height:4px;
+  background:black;
+}
+.resistor .body{
+  width:120px;
+  height:30px;
+  background:#fbbf24;
+  display:flex;
+  align-items:center;
+}
+.band{
+  width:12px;
+  height:100%;
+  margin:0 4px;
+}
+.grid-note{
+  font-size:13px;
+  color:#333;
 }
 @media(max-width:900px){
   .layout{grid-template-columns:1fr}
@@ -79,18 +95,13 @@ canvas{
 <body>
 
 <header>
-<h1>Circuito RL – Aplicación de EDO de Primer Orden</h1>
-<div class="note">
-Modelo matemático y físico del decaimiento de la corriente
-</div>
+<h1>Circuito RL – Ecuación Diferencial de Primer Orden</h1>
 </header>
 
 <div class="container">
 
-<!-- PARAMETROS -->
-<section class="card">
-<h2>Parámetros del circuito</h2>
-
+<div class="card">
+<h2>Parámetros</h2>
 <label>Resistencia R (Ω)</label>
 <input id="R" type="number" value="100">
 
@@ -104,87 +115,111 @@ Modelo matemático y físico del decaimiento de la corriente
 <input id="tmax" type="number" value="0.5">
 
 <button onclick="calcular()">Calcular</button>
-</section>
+</div>
 
-<!-- CONTENIDO PRINCIPAL -->
 <div class="layout">
 
 <!-- GRAFICA -->
-<section class="card">
+<div class="card">
 <h2>Gráfica I(t)</h2>
 <canvas id="graf"></canvas>
-<div class="note">
-Eje X: tiempo (s) — Eje Y: corriente (A)
+<div class="grid-note">
+Eje X: Tiempo (s) · Eje Y: Corriente (A) · Cuadrícula para mayor precisión
 </div>
-</section>
+</div>
 
 <!-- RESULTADOS -->
-<section>
+<div>
 
-<!-- RESISTENCIA USADA -->
-<div class="card resistencia-box">
-<h3>Resistencia utilizada en el problema</h3>
-<div id="resistenciaInfo">—</div>
+<div class="card resistor-box">
+<h3>Resistencia utilizada</h3>
+
+<div class="resistor">
+  <div class="wire"></div>
+  <div class="body" id="bandas"></div>
+  <div class="wire"></div>
 </div>
 
-<!-- RESULTADOS NUMERICOS -->
+<div id="res-info"></div>
+</div>
+
 <div class="card">
-<h3>Resultados y análisis</h3>
-<div id="resultados">—</div>
+<h3>Análisis matemático</h3>
+<div id="info"></div>
 </div>
 
-</section>
 </div>
-
+</div>
 </div>
 
 <script>
+const colores = [
+  "black","brown","red","orange","yellow",
+  "green","blue","violet","gray","white"
+];
+
+function crearBandas(R){
+  const cuerpo = document.getElementById("bandas");
+  cuerpo.innerHTML = "";
+
+  let exp = Math.floor(Math.log10(R));
+  let base = Math.round(R / Math.pow(10, exp-1));
+
+  let b1 = Math.floor(base/10);
+  let b2 = base%10;
+  let mult = exp-1;
+
+  [b1,b2,mult].forEach(i=>{
+    let div=document.createElement("div");
+    div.className="band";
+    div.style.background=colores[i];
+    cuerpo.appendChild(div);
+  });
+}
+
 function calcular(){
-  const R = +document.getElementById("R").value;
-  const L = +document.getElementById("L").value;
-  const I0 = +document.getElementById("I0").value;
-  const tmax = +document.getElementById("tmax").value;
+  const R=+Rinput.value, L=+Linput.value, I0=+I0input.value, tmax=+tmaxinput.value;
+  if(!R||!L||!I0||!tmax)return;
 
-  if(!R || !L || !I0 || !tmax) return;
+  crearBandas(R);
 
-  const tau = L / R;
+  document.getElementById("res-info").innerHTML=
+    `<b>Valor:</b> ${R} Ω<br>Código de colores según norma.`
 
-  // Mostrar resistencia usada
-  document.getElementById("resistenciaInfo").innerHTML = `
-    <b>R = ${R} Ω</b><br>
-    La resistencia limita el paso de corriente y controla
-    la rapidez del decaimiento.
+  const tau=L/R;
+
+  document.getElementById("info").innerHTML=`
+  Ecuación diferencial:<br>
+  dI/dt + (R/L)·I = 0<br><br>
+  Solución:<br>
+  I(t) = I₀ · e<sup>-t/τ</sup><br><br>
+  τ = ${tau.toFixed(4)} s
   `;
 
-  // Resultados
-  document.getElementById("resultados").innerHTML = `
-    <b>Ecuación diferencial:</b><br>
-    dI/dt + (R/L) · I = 0<br><br>
+  graficar(R,L,I0,tmax);
+}
 
-    <b>Solución general:</b><br>
-    I(t) = I₀ · e<sup>-t/τ</sup><br><br>
+function graficar(R,L,I0,tmax){
+  const c=graf,ctx=c.getContext("2d");
+  c.width=c.clientWidth;
+  c.height=350;
 
-    <b>Constante de tiempo:</b><br>
-    τ = L / R = <b>${tau.toExponential(3)} s</b><br><br>
+  const m={l:60,r:20,t:20,b:50};
+  const w=c.width-m.l-m.r;
+  const h=c.height-m.t-m.b;
 
-    <b>Corriente final:</b><br>
-    I(${tmax}s) = <b>${(I0*Math.exp(-tmax/tau)).toFixed(6)} A</b>
-  `;
+  ctx.clearRect(0,0,c.width,c.height);
 
-  // GRAFICA
-  const canvas = document.getElementById("graf");
-  const ctx = canvas.getContext("2d");
+  // CUADRICULA
+  ctx.strokeStyle="#e5e7eb";
+  for(let i=0;i<=10;i++){
+    let x=m.l+w*i/10;
+    let y=m.t+h*i/10;
+    ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,m.t+h);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(m.l+w,y);ctx.stroke();
+  }
 
-  canvas.width = canvas.clientWidth;
-  canvas.height = 320;
-
-  const m = {l:60,r:20,t:20,b:50};
-  const w = canvas.width - m.l - m.r;
-  const h = canvas.height - m.t - m.b;
-
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // Ejes
+  // EJES
   ctx.strokeStyle="#000";
   ctx.beginPath();
   ctx.moveTo(m.l,m.t);
@@ -192,49 +227,27 @@ function calcular(){
   ctx.lineTo(m.l+w,m.t+h);
   ctx.stroke();
 
-  ctx.font="13px Arial";
-  ctx.fillStyle="#000";
-
-  // Eje Y
+  ctx.font="12px Arial";
   for(let i=0;i<=5;i++){
-    let I = I0*i/5;
-    let y = m.t + h - h*i/5;
-    ctx.fillText(I.toFixed(2)+" A", 5, y+4);
+    ctx.fillText((tmax*i/5).toFixed(2)+" s",m.l+w*i/5-10,m.t+h+20);
+    ctx.fillText((I0*i/5).toFixed(2)+" A",5,m.t+h-h*i/5);
   }
 
-  // Eje X
-  for(let i=0;i<=5;i++){
-    let t = tmax*i/5;
-    let x = m.l + w*i/5;
-    ctx.fillText(t.toFixed(2)+" s", x-12, m.t+h+20);
-  }
-
-  // Curva
+  // CURVA
   ctx.strokeStyle="#2563eb";
   ctx.lineWidth=2;
   ctx.beginPath();
-  for(let i=0;i<=300;i++){
-    let t = tmax*i/300;
-    let I = I0*Math.exp(-t/tau);
-    let x = m.l + w*(t/tmax);
-    let y = m.t + h*(1 - I/I0);
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  for(let i=0;i<=500;i++){
+    let t=tmax*i/500;
+    let I=I0*Math.exp(-t/(L/R));
+    let x=m.l+w*t/tmax;
+    let y=m.t+h*(1-I/I0);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
   }
   ctx.stroke();
-
-  // Línea tau
-  let xtau = m.l + w*(tau/tmax);
-  ctx.setLineDash([6,6]);
-  ctx.strokeStyle="#dc2626";
-  ctx.beginPath();
-  ctx.moveTo(xtau,m.t);
-  ctx.lineTo(xtau,m.t+h);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  ctx.fillStyle="#dc2626";
-  ctx.fillText("τ", xtau+4, m.t+15);
 }
+
+const Rinput=R,Linput=L,I0input=I0,tmaxinput=tmax;
 </script>
 
 </body>
