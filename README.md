@@ -224,22 +224,6 @@ Aplicación educativa – Cálculo Diferencial
 </div>
 
 <script>
-const canvas = document.getElementById("graf");
-const ctx = canvas.getContext("2d");
-
-function ajustarCanvas(){
-  const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-window.addEventListener("load", ajustarCanvas);
-window.addEventListener("resize", ajustarCanvas);
-
 function calcular(){
   let R = parseFloat(document.getElementById("R").value);
   let L = parseFloat(document.getElementById("L").value);
@@ -255,52 +239,74 @@ function calcular(){
   }
 
   const tau = L / R;
-  ajustarCanvas();
 
-  // RESULTADOS
+  ajustarCanvas();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+
+  const m = {l:60,r:20,t:20,b:50};
+  const pw = w - m.l - m.r;
+  const ph = h - m.t - m.b;
+
+  /* ───────── EJES ───────── */
+  ctx.strokeStyle="#94a3b8";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(m.l,m.t);
+  ctx.lineTo(m.l,m.t+ph);
+  ctx.lineTo(m.l+pw,m.t+ph);
+  ctx.stroke();
+
+  ctx.fillStyle="#e5e7eb";
+  ctx.font="13px Arial";
+
+  /* ───────── ESCALA Y (CORRIENTE) ───────── */
+  const yTicks = 5;
+  for(let i=0;i<=yTicks;i++){
+    const I = (I0*i/yTicks).toFixed(2);
+    const y = m.t + ph - (i/yTicks)*ph;
+    ctx.fillText(I+" A", 5, y+4);
+    ctx.strokeStyle="rgba(148,163,184,0.15)";
+    ctx.beginPath();
+    ctx.moveTo(m.l,y);
+    ctx.lineTo(m.l+pw,y);
+    ctx.stroke();
+  }
+
+  /* ───────── ESCALA X (TIEMPO) ───────── */
+  const xTicks = 6;
+  for(let i=0;i<=xTicks;i++){
+    const t = (tmax*i/xTicks).toFixed(2);
+    const x = m.l + (i/xTicks)*pw;
+    ctx.fillText(t+" s", x-10, m.t+ph+20);
+  }
+
+  /* ───────── CURVA I(t) ───────── */
+  ctx.beginPath();
+  ctx.strokeStyle="#38bdf8";
+  ctx.lineWidth=2;
+
+  for(let i=0;i<=300;i++){
+    const t = (i/300)*tmax;
+    const I = I0*Math.exp(-t/tau);
+    const x = m.l + (t/tmax)*pw;
+    const y = m.t + ph - (I/I0)*ph;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  /* ───────── RESULTADOS ───────── */
   document.getElementById("resultados").innerHTML = `
     <h2>Resultados numéricos y memoria de cálculo</h2>
     <p><strong>Constante de tiempo:</strong> τ = ${tau.toExponential(3)} s</p>
-    <p><strong>Ecuación:</strong> I(t) = I₀ · e<sup>-t / τ</sup></p>
+    <p><strong>Ecuación:</strong> I(t) = ${I0} · e<sup>-t / ${tau.toExponential(3)}</sup></p>
     <ul>
       <li>I(0) = ${I0} A</li>
       <li>I(tₘₐₓ) = ${(I0*Math.exp(-tmax/tau)).toFixed(6)} A</li>
     </ul>
   `;
-
-  // LIMPIAR
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const w = canvas.clientWidth;
-  const h = canvas.clientHeight;
-
-  const margin = {l:50, r:20, t:20, b:40};
-  const pw = w - margin.l - margin.r;
-  const ph = h - margin.t - margin.b;
-
-  // EJES
-  ctx.strokeStyle = "#334155";
-  ctx.beginPath();
-  ctx.moveTo(margin.l, margin.t);
-  ctx.lineTo(margin.l, margin.t + ph);
-  ctx.lineTo(margin.l + pw, margin.t + ph);
-  ctx.stroke();
-
-  // CURVA
-  ctx.beginPath();
-  ctx.strokeStyle = "#38bdf8";
-  ctx.lineWidth = 2;
-
-  for(let i = 0; i <= 300; i++){
-    const t = (i / 300) * tmax;
-    const I = I0 * Math.exp(-t / tau);
-
-    const x = margin.l + (t / tmax) * pw;
-    const y = margin.t + ph - (I / I0) * ph;
-
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-  ctx.stroke();
 }
 </script>
 
