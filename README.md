@@ -51,44 +51,20 @@ button{
 }
 canvas{
   width:100%;
-  height:350px;
+  height:360px;
   border:1px solid #999;
 }
-.resistor{
-  display:flex;
-  align-items:center;
-  margin:10px 0;
-}
-.wire{width:30px;height:4px;background:black}
-.body{
-  width:120px;height:30px;
-  background:#e5e7eb;
-  display:flex;
-  align-items:center;
-}
-.band{
-  width:12px;height:100%;
-  margin:0 4px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
-}
-th,td{
-  border:1px solid #ccc;
-  padding:6px;
-  text-align:center;
-}
-th{background:#f3f4f6}
 h3{margin-top:0}
+.axis{
+  font-size:12px;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>Aplicación de Ecuaciones Diferenciales – Circuito RL en Serie</h1>
+<h1>Circuito RL en Serie – Ecuación Diferencial de Primer Orden</h1>
 </header>
 
 <div class="container">
@@ -113,140 +89,106 @@ h3{margin-top:0}
 
 <div class="layout">
 
-<!-- IZQUIERDA -->
-<div>
-
 <div class="card">
-<h3>Resistencia utilizada</h3>
-<div class="resistor">
-  <div class="wire"></div>
-  <div class="body" id="bandas"></div>
-  <div class="wire"></div>
-</div>
-<div id="resInfo"></div>
-</div>
-
-<div class="card">
-<h3>Memoria de cálculo</h3>
-<div id="memoria"></div>
-</div>
-
-<div class="card">
-<h3>Valores característicos</h3>
-<div id="tabla"></div>
-</div>
-
-</div>
-
-<!-- DERECHA -->
-<div class="card">
-<h3>Gráfica de la corriente I(t)</h3>
+<h3>Gráfica I(t)</h3>
 <canvas id="graf"></canvas>
+</div>
+
+<div class="card">
+<h3>Valores relevantes</h3>
+<div id="info"></div>
 </div>
 
 </div>
 </div>
 
 <script>
-const colores=["black","brown","red","orange","yellow","green","blue","violet","gray","white"];
-
-function crearBandas(R){
-  bandas.innerHTML="";
-  let e=Math.floor(Math.log10(R));
-  let b=Math.round(R/Math.pow(10,e-1));
-  let d1=Math.floor(b/10), d2=b%10, m=e-1;
-  [d1,d2,m].forEach(i=>{
-    let div=document.createElement("div");
-    div.className="band";
-    div.style.background=colores[i];
-    bandas.appendChild(div);
-  });
-}
-
 function calcular(){
-  let Rv=+R.value,Lv=+L.value,I0v=+I0.value,tv=+tmax.value;
-  if(!Rv||!Lv||!I0v||!tv)return;
+  const R=+Rinput.value;
+  const L=+Linput.value;
+  const I0=+I0input.value;
+  const tmax=+tmaxinput.value;
+  if(!R||!L||!I0||!tmax)return;
 
-  crearBandas(Rv);
-  resInfo.innerHTML=`R = <b>${Rv} Ω</b>`;
-
-  let tau=Lv/Rv;
-
-  memoria.innerHTML=`
-<b>1. Datos</b><br>
-R = ${Rv} Ω<br>
-L = ${Lv} H<br>
-I₀ = ${I0v} A<br><br>
-
-<b>2. Ecuación diferencial</b><br>
-L·dI/dt + R·I = 0<br><br>
-
-<b>3. Resolución</b><br>
-dI/I = -(R/L) dt<br>
-ln(I) = -(R/L)t + C<br><br>
-
-<b>4. Condición inicial</b><br>
-I(0)=I₀ → C=ln(I₀)<br><br>
-
-<b>5. Solución final</b><br>
-I(t)= I₀·e<sup>-t/τ</sup><br>
-τ = L/R = ${tau.toFixed(4)} s<br><br>
-
-<b>6. Interpretación</b><br>
-En t = τ la corriente cae al 36,8 % del valor inicial.
-`;
-
-  let puntos=[
-    {n:"0",t:0},
-    {n:"τ",t:tau},
-    {n:"2τ",t:2*tau},
-    {n:"3τ",t:3*tau},
-    {n:"tₘₐₓ",t:tv}
-  ];
-
-  let html="<table><tr><th>Punto</th><th>t (s)</th><th>I(t) (A)</th></tr>";
-  puntos.forEach(p=>{
-    let I=I0v*Math.exp(-p.t/tau);
-    html+=`<tr><td>${p.n}</td><td>${p.t.toFixed(3)}</td><td>${I.toFixed(4)}</td></tr>`;
-  });
-  html+="</table>";
-  tabla.innerHTML=html;
-
-  graficar(Rv,Lv,I0v,tv);
+  const tau=L/R;
+  info.innerHTML=`
+    τ = ${tau.toFixed(4)} s<br>
+    I(τ) = ${(I0*Math.exp(-1)).toFixed(4)} A
+  `;
+  graficar(R,L,I0,tmax);
 }
 
 function graficar(R,L,I0,tmax){
-  let ctx=graf.getContext("2d");
-  graf.width=graf.clientWidth;
-  graf.height=350;
-  ctx.clearRect(0,0,graf.width,graf.height);
+  const c=graf,ctx=c.getContext("2d");
+  c.width=c.clientWidth;
+  c.height=360;
+  ctx.clearRect(0,0,c.width,c.height);
 
-  let m=60,w=graf.width-m-20,h=graf.height-40;
-  let tau=L/R;
+  const m={l:70,r:20,t:20,b:60};
+  const w=c.width-m.l-m.r;
+  const h=c.height-m.t-m.b;
+  const tau=L/R;
 
-  ctx.strokeStyle="#ddd";
-  for(let i=0;i<=10;i++){
-    let x=m+w*i/10,y=20+h*i/10;
-    ctx.beginPath();ctx.moveTo(x,20);ctx.lineTo(x,20+h);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(m,y);ctx.lineTo(m+w,y);ctx.stroke();
+  // Cuadrícula
+  ctx.strokeStyle="#e5e7eb";
+  ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    let x=m.l+w*i/5;
+    let y=m.t+h*i/5;
+    ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,m.t+h);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(m.l+w,y);ctx.stroke();
   }
 
+  // Ejes
   ctx.strokeStyle="#000";
   ctx.beginPath();
-  ctx.moveTo(m,20);ctx.lineTo(m,20+h);ctx.lineTo(m+w,20+h);
+  ctx.moveTo(m.l,m.t);
+  ctx.lineTo(m.l,m.t+h);
+  ctx.lineTo(m.l+w,m.t+h);
   ctx.stroke();
 
+  ctx.font="12px Arial";
+  ctx.fillStyle="#000";
+
+  // Eje Y
+  for(let i=0;i<=5;i++){
+    let I=I0*i/5;
+    let y=m.t+h-h*i/5;
+    ctx.fillText(I.toFixed(2)+" A",10,y+4);
+  }
+
+  // Eje X
+  for(let i=0;i<=5;i++){
+    let t=tmax*i/5;
+    let x=m.l+w*i/5;
+    ctx.fillText(t.toFixed(2)+" s",x-12,m.t+h+25);
+  }
+
+  // Curva
   ctx.strokeStyle="#2563eb";
+  ctx.lineWidth=2;
   ctx.beginPath();
   for(let i=0;i<=400;i++){
     let t=tmax*i/400;
     let I=I0*Math.exp(-t/tau);
-    let x=m+w*t/tmax;
-    let y=20+h*(1-I/I0);
-    if(i==0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    let x=m.l+w*t/tmax;
+    let y=m.t+h*(1-I/I0);
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
   }
   ctx.stroke();
+
+  // Punto en τ
+  const xt=m.l+w*(tau/tmax);
+  const yt=m.t+h*(1-Math.exp(-1));
+  ctx.fillStyle="red";
+  ctx.beginPath();
+  ctx.arc(xt,yt,4,0,2*Math.PI);
+  ctx.fill();
+
+  ctx.fillText("τ",xt+6,yt-6);
 }
+
+const Rinput=R,Linput=L,I0input=I0,tmaxinput=tmax;
 </script>
 
 </body>
