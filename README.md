@@ -1,5 +1,5 @@
 # circuito-RL
-<!DOCTYPE html>
+<jeremmy-gabriel>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -224,50 +224,81 @@ Aplicación educativa – Cálculo Diferencial
 </div>
 
 <script>
-const canvas=document.getElementById("graf");
-const ctx=canvas.getContext("2d");
+const canvas = document.getElementById("graf");
+const ctx = canvas.getContext("2d");
 
-function resize(){
-  const r=window.devicePixelRatio||1;
-  canvas.width=canvas.clientWidth*r;
-  canvas.height=canvas.clientHeight*r;
-  ctx.setTransform(r,0,0,r,0,0);
+function ajustarCanvas(){
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-resize();window.onresize=resize;
+
+window.addEventListener("load", ajustarCanvas);
+window.addEventListener("resize", ajustarCanvas);
 
 function calcular(){
-  let R=+R=document.getElementById("R").value;
-  let L=+document.getElementById("L").value;
-  const I0=+document.getElementById("I0").value;
-  const tmax=+document.getElementById("tmax").value;
+  let R = parseFloat(document.getElementById("R").value);
+  let L = parseFloat(document.getElementById("L").value);
+  const I0 = parseFloat(document.getElementById("I0").value);
+  const tmax = parseFloat(document.getElementById("tmax").value);
 
-  if(document.getElementById("Ru").value==="kohm") R*=1000;
-  if(document.getElementById("Lu").value==="mH") L*=1e-3;
+  if(document.getElementById("Ru").value === "kohm") R *= 1000;
+  if(document.getElementById("Lu").value === "mH") L *= 1e-3;
 
-  const tau=L/R;
-  const resultados=document.getElementById("resultados");
+  if(R <= 0 || L <= 0 || I0 < 0 || tmax <= 0){
+    alert("Datos no válidos");
+    return;
+  }
 
-  resultados.innerHTML=`
-  <h2>Resultados numéricos y memoria de cálculo</h2>
-  <p><strong>Constante de tiempo:</strong> τ = L / R = ${tau.toExponential(3)} s</p>
-  <p><strong>Ecuación:</strong> I(t) = I₀ · e<sup>-t / τ</sup></p>
-  <ul>
-    <li>I(0) = ${I0} A</li>
-    <li>I(tₘₐₓ) = ${(I0*Math.exp(-tmax/tau)).toFixed(6)} A</li>
-  </ul>
+  const tau = L / R;
+  ajustarCanvas();
+
+  // RESULTADOS
+  document.getElementById("resultados").innerHTML = `
+    <h2>Resultados numéricos y memoria de cálculo</h2>
+    <p><strong>Constante de tiempo:</strong> τ = ${tau.toExponential(3)} s</p>
+    <p><strong>Ecuación:</strong> I(t) = I₀ · e<sup>-t / τ</sup></p>
+    <ul>
+      <li>I(0) = ${I0} A</li>
+      <li>I(tₘₐₓ) = ${(I0*Math.exp(-tmax/tau)).toFixed(6)} A</li>
+    </ul>
   `;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.beginPath();
-  ctx.strokeStyle="#38bdf8";
-  ctx.lineWidth=2;
+  // LIMPIAR
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  for(let i=0;i<=200;i++){
-    const t=i/200*tmax;
-    const I=I0*Math.exp(-t/tau);
-    const x=50+t/tmax*(canvas.clientWidth-80);
-    const y=250-(I/I0)*200;
-    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+
+  const margin = {l:50, r:20, t:20, b:40};
+  const pw = w - margin.l - margin.r;
+  const ph = h - margin.t - margin.b;
+
+  // EJES
+  ctx.strokeStyle = "#334155";
+  ctx.beginPath();
+  ctx.moveTo(margin.l, margin.t);
+  ctx.lineTo(margin.l, margin.t + ph);
+  ctx.lineTo(margin.l + pw, margin.t + ph);
+  ctx.stroke();
+
+  // CURVA
+  ctx.beginPath();
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2;
+
+  for(let i = 0; i <= 300; i++){
+    const t = (i / 300) * tmax;
+    const I = I0 * Math.exp(-t / tau);
+
+    const x = margin.l + (t / tmax) * pw;
+    const y = margin.t + ph - (I / I0) * ph;
+
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
   }
   ctx.stroke();
 }
