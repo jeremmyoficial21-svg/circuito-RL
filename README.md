@@ -1,266 +1,319 @@
 # circuito-RL
-<!DOCTYPE html>
+<jeremmy-gabriel>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Circuito RL en Serie – EDO Primer Orden</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RL Serie — Calculadora EDO 1º orden</title>
 <style>
 :root{
-  --bg:#020617;
-  --card:#0f172a;
-  --accent:#38bdf8;
-  --text:#e5e7eb;
-  --muted:#94a3b8;
-  --tau:#22d3ee;
+  --bg:#020617; --card:#0f172a; --accent:#38bdf8; --muted:#94a3b8; --tau:#22d3ee; --text:#e6eef8;
 }
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:linear-gradient(180deg,#020617,#020617);
-  color:var(--text);
-}
-
-header{
-  text-align:center;
-  padding:20px;
-  border-bottom:2px solid var(--accent);
-}
-
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#020617,#071224);color:var(--text)}
+header{padding:18px;text-align:center;border-bottom:2px solid rgba(56,189,248,0.06)}
 h1{margin:0;color:var(--accent)}
-
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-}
-
-.card{
-  background:var(--card);
-  padding:20px;
-  border-radius:14px;
-  margin-bottom:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,.35);
-}
-
-label{
-  color:var(--muted);
-  font-size:15px;
-  margin-bottom:6px;
-  display:block;
-}
-
-input,select{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #334155;
-  background:#020617;
-  color:white;
-}
-
-.form{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:14px;
-}
-
-.row{
-  display:grid;
-  grid-template-columns:1fr 80px;
-  gap:8px;
-}
-
-button{
-  margin-top:15px;
-  padding:12px;
-  font-size:15px;
-  font-weight:bold;
-  background:var(--accent);
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-canvas{
-  width:100%;
-  height:320px;
-  background:#020617;
-  border-radius:12px;
-  border:1px solid #334155;
-}
-
-.results{
-  background:#020617;
-  border-left:5px solid var(--accent);
-  padding:18px;
-  border-radius:12px;
-  font-size:16px;
-  line-height:1.6;
-}
-
-.results h2{margin-top:0;color:var(--accent)}
-footer{text-align:center;color:var(--muted);font-size:13px}
+.container{max-width:1100px;margin:22px auto;padding:18px}
+.card{background:var(--card);padding:18px;border-radius:12px;margin-bottom:18px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.row{display:flex;gap:8px;align-items:center}
+label{display:block;color:var(--muted);font-size:14px;margin-bottom:6px}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:transparent;color:var(--text);font-family:monospace}
+button{margin-top:12px;padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#60a5fa);color:#021025;font-weight:700;cursor:pointer}
+canvas{width:100%;height:320px;border-radius:10px;border:1px solid #334155;background:linear-gradient(180deg,#021222,#04162b)}
+.results{padding:16px;border-left:4px solid var(--accent);background:rgba(255,255,255,0.01);border-radius:8px;font-size:15px}
+.note{color:var(--muted);font-size:13px;margin-top:8px}
+.footer{ text-align:center;color:var(--muted);margin-top:14px;font-size:13px}
+@media(max-width:900px){canvas{height:260px}}
 </style>
 </head>
-
 <body>
-
 <header>
-  <h1>⚡ Circuito RL en Serie</h1>
-  <p>Ecuación diferencial homogénea de primer orden</p>
+  <h1>Calculadora RL — EDO 1º orden</h1>
+  <div class="note">Ingresa cualquier valor y pulsa "Calcular y graficar".</div>
 </header>
 
-<div class="container">
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;color:var(--accent)">Parámetros</h2>
+    <div class="form">
+      <div>
+        <label for="R_val">Resistencia R</label>
+        <div class="row">
+          <input id="R_val" type="number" step="any" placeholder="ej. 100">
+          <select id="R_unit" style="width:110px">
+            <option value="ohm">Ω</option>
+            <option value="kohm">kΩ</option>
+          </select>
+        </div>
+      </div>
 
-<div class="card">
-<h2>Datos del circuito</h2>
-<div class="form">
-  <div>
-    <label>Resistencia R</label>
-    <div class="row">
-      <input id="R" type="number" value="100">
-      <select id="Ru"><option value="ohm">Ω</option><option value="kohm">kΩ</option></select>
+      <div>
+        <label for="L_val">Inductancia L</label>
+        <div class="row">
+          <input id="L_val" type="number" step="any" placeholder="ej. 10">
+          <select id="L_unit" style="width:110px">
+            <option value="H">H</option>
+            <option value="mH">mH</option>
+            <option value="uH">µH</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="I0">Corriente inicial I₀ (A)</label>
+        <input id="I0" type="number" step="any" placeholder="ej. 1">
+      </div>
+
+      <div>
+        <label for="tmax">Tiempo máximo tₘₐₓ (s)</label>
+        <input id="tmax" type="number" step="any" placeholder="ej. 0.5">
+      </div>
+
+      <div>
+        <label for="dt">Paso Δt (s) — opcional</label>
+        <input id="dt" type="number" step="any" placeholder="ej. 0.001">
+      </div>
+
+      <div>
+        <label for="Iobj">I_obj (A) — opcional</label>
+        <input id="Iobj" type="number" step="any" placeholder="ej. 0.1">
+      </div>
     </div>
-  </div>
 
-  <div>
-    <label>Inductancia L</label>
-    <div class="row">
-      <input id="L" type="number" value="10">
-      <select id="Lu"><option value="H">H</option><option value="mH">mH</option></select>
+    <div style="margin-top:12px">
+      <button id="run">Calcular y graficar</button>
+      <button id="reset" style="margin-left:8px;background:transparent;border:1px solid rgba(56,189,248,0.12);color:var(--accent)">Limpiar</button>
     </div>
-  </div>
 
-  <div>
-    <label>Corriente inicial I₀ (A)</label>
-    <input id="I0" type="number" value="1">
-  </div>
+    <div id="messages" class="note"></div>
+  </section>
 
-  <div>
-    <label>Tiempo máximo tₘₐₓ (s)</label>
-    <input id="tmax" type="number" value="0.5">
-  </div>
-</div>
+  <section class="card">
+    <h2 style="margin-top:0;color:var(--accent)">Gráfica I(t)</h2>
+    <canvas id="plot" aria-label="Grafica de corriente"></canvas>
+    <div id="legend" class="note" style="margin-top:8px">Eje X en segundos (s). Eje Y en amperios (A). Línea punteada = τ.</div>
+  </section>
 
-<button onclick="calcular()">Calcular y graficar</button>
-</div>
+  <section class="card results" id="results">
+    <h3 style="margin-top:0;color:var(--accent)">Resultados numéricos y memoria de cálculo</h3>
+    <div id="resbody">Presiona "Calcular y graficar" para mostrar resultados aquí.</div>
+  </section>
 
-<div class="card">
-<h2>Gráfica I(t)</h2>
-<canvas id="graf"></canvas>
-</div>
-
-<div class="results" id="resultados">
-<h2>Resultados</h2>
-<p>Presiona <strong>Calcular</strong>.</p>
-</div>
-
-<footer>
-Aplicación educativa – Cálculo Diferencial
-</footer>
-
-</div>
+  <div class="footer">Archivo local — funciona offline y en hosting</div>
+</main>
 
 <script>
-const canvas = document.getElementById("graf");
-const ctx = canvas.getContext("2d");
+// ===== utilidades =====
+function toOhm(val, unit){
+  if(!isFinite(val)) return NaN;
+  if(unit==='kohm') return val*1e3;
+  return val;
+}
+function toHenry(val, unit){
+  if(!isFinite(val)) return NaN;
+  if(unit==='mH') return val*1e-3;
+  if(unit==='uH') return val*1e-6;
+  return val;
+}
 
-function ajustarCanvas(){
+// ===== canvas setup =====
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+function adjustCanvas(){
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
+  // if rect.width is 0 (hidden or not yet laid out), use fallback
+  const w = rect.width || 800;
+  const h = rect.height || 320;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
+  // clear logical size
+  ctx.clearRect(0,0,canvas.clientWidth, canvas.clientHeight);
 }
-window.addEventListener("load", ajustarCanvas);
-window.addEventListener("resize", ajustarCanvas);
+window.addEventListener('load', adjustCanvas);
+window.addEventListener('resize', adjustCanvas);
 
-function calcular(){
-  let R = +document.getElementById("R").value;
-  let L = +document.getElementById("L").value;
-  const I0 = +document.getElementById("I0").value;
-  const tmax = +document.getElementById("tmax").value;
+// ===== dibujo con ejes y marcas =====
+function drawCurve(data, I0, tView, tau, opts={}){
+  adjustCanvas();
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  ctx.clearRect(0,0,w,h);
+  const m = {l:64, r:24, t:20, b:44};
+  const pw = w - m.l - m.r, ph = h - m.t - m.b;
 
-  if(document.getElementById("Ru").value==="kohm") R*=1000;
-  if(document.getElementById("Lu").value==="mH") L*=1e-3;
-
-  const tau = L/R;
-  const tView = Math.min(tmax,5*tau);
-
-  ajustarCanvas();
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  const w = canvas.clientWidth;
-  const h = canvas.clientHeight;
-  const m = {l:60,r:20,t:20,b:50};
-  const pw = w-m.l-m.r;
-  const ph = h-m.t-m.b;
-
-  // Ejes
-  ctx.strokeStyle="#94a3b8";
+  // ejes
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(m.l,m.t);
   ctx.lineTo(m.l,m.t+ph);
   ctx.lineTo(m.l+pw,m.t+ph);
   ctx.stroke();
 
-  // Escala Y
-  ctx.fillStyle="#e5e7eb";
-  ctx.font="13px Arial";
-  for(let i=0;i<=5;i++){
-    const I=(I0*i/5).toFixed(2);
-    const y=m.t+ph-(i/5)*ph;
-    ctx.fillText(I+" A",5,y+4);
+  // Y ticks (corriente)
+  const yTicks = 5;
+  ctx.fillStyle = '#dff3ff';
+  ctx.font = '13px monospace';
+  for(let i=0;i<=yTicks;i++){
+    const frac = i / yTicks;
+    const I = I0 * frac;
+    const y = m.t + ph - frac * ph;
+    ctx.fillText(I.toFixed(2) + ' A', 6, y+4);
+    // grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.02)'; ctx.beginPath();
+    ctx.moveTo(m.l, y); ctx.lineTo(m.l+pw, y); ctx.stroke();
   }
 
-  // Escala X
-  for(let i=0;i<=5;i++){
-    const t=(tView*i/5).toFixed(3);
-    const x=m.l+(i/5)*pw;
-    ctx.fillText(t+" s",x-10,m.t+ph+22);
+  // X ticks (tiempo)
+  const xTicks = 6;
+  for(let i=0;i<=xTicks;i++){
+    const frac = i / xTicks;
+    const t = tView * frac;
+    const x = m.l + frac * pw;
+    ctx.fillText(t.toFixed(3) + ' s', x-14, m.t + ph + 20);
   }
 
-  // Curva
+  // curve
   ctx.beginPath();
-  ctx.strokeStyle=varAccent="#38bdf8";
-  ctx.lineWidth=2;
-  for(let i=0;i<=400;i++){
-    const t=(i/400)*tView;
-    const I=I0*Math.exp(-t/tau);
-    const x=m.l+(t/tView)*pw;
-    const y=m.t+ph-(I/I0)*ph;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 2;
+  for(let i=0;i<data.length;i++){
+    const pt = data[i];
+    const x = m.l + (pt.t / tView) * pw;
+    const y = m.t + ph - (pt.I / I0) * ph;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
   ctx.stroke();
 
-  // Marca τ
-  const xTau=m.l+(tau/tView)*pw;
-  ctx.setLineDash([6,6]);
-  ctx.strokeStyle="#22d3ee";
-  ctx.beginPath();
-  ctx.moveTo(xTau,m.t);
-  ctx.lineTo(xTau,m.t+ph);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle="#22d3ee";
-  ctx.fillText("τ",xTau-4,m.t-5);
+  // Mark tau (only if tau <= tView*1.5 — if tau outside, position at edge)
+  if(isFinite(tau) && tau > 0){
+    const xTau = m.l + Math.min(tau / tView, 1) * pw;
+    ctx.setLineDash([6,6]);
+    ctx.strokeStyle = '#22d3ee';
+    ctx.beginPath();
+    ctx.moveTo(xTau, m.t);
+    ctx.lineTo(xTau, m.t + ph);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#22d3ee';
+    ctx.fillText('τ', xTau - 6, m.t - 6);
+  }
 
-  // Resultados
-  document.getElementById("resultados").innerHTML=`
-    <h2>Resultados numéricos y memoria de cálculo</h2>
-    <p><strong>Constante de tiempo:</strong> τ = L/R = ${tau.toExponential(3)} s</p>
-    <p><strong>Función:</strong> I(t) = ${I0} · e<sup>-t / ${tau.toExponential(3)}</sup></p>
-    <ul>
-      <li>I(0) = ${I0} A</li>
-      <li>I(tₘₐₓ) = ${(I0*Math.exp(-tmax/tau)).toFixed(6)} A</li>
-    </ul>
-  `;
+  // highlight initial point
+  ctx.fillStyle = '#a7f3d0';
+  const x0 = m.l + 0 * pw;
+  const y0 = m.t + ph - (data[0].I / I0) * ph;
+  ctx.beginPath(); ctx.arc(x0, y0, 3, 0, Math.PI*2); ctx.fill();
+
+  // optional: show I0 and I(tView) numeric near top
+  ctx.fillStyle = '#dff3ff';
+  ctx.font = '13px monospace';
+  ctx.fillText('I(0)=' + data[0].I.toFixed(3) + ' A', m.l + 6, m.t + 14);
+  ctx.fillText('I(' + tView.toFixed(3) + 's)=' + data[data.length-1].I.toFixed(6) + ' A', m.l + 6, m.t + 32);
 }
-</script>
 
+// ===== cálculo y validación =====
+document.getElementById('run').addEventListener('click', ()=>{
+
+  // leer entradas (permitir campos vacíos: tratar como NaN)
+  const Rv = parseFloat(document.getElementById('R_val').value);
+  const Runit = document.getElementById('R_unit').value;
+  const Lv = parseFloat(document.getElementById('L_val').value);
+  const Lunit = document.getElementById('L_unit').value;
+  const I0v = parseFloat(document.getElementById('I0').value);
+  const tmaxv = parseFloat(document.getElementById('tmax').value);
+  const dtv = parseFloat(document.getElementById('dt').value);
+  const Iobjv = parseFloat(document.getElementById('Iobj').value);
+
+  const msg = document.getElementById('messages');
+  msg.textContent = '';
+
+  // conversion
+  const R = toOhm(Rv, Runit);
+  const L = toHenry(Lv, Lunit);
+  const I0 = isFinite(I0v) ? I0v : NaN;
+  const tmax = isFinite(tmaxv) ? tmaxv : NaN;
+  const dt = isFinite(dtv) ? dtv : NaN;
+  const Iobj = isFinite(Iobjv) ? Iobjv : NaN;
+
+  // validaciones
+  if(!isFinite(R) || R <= 0){ msg.textContent = 'Ingrese R válido (>0).'; return; }
+  if(!isFinite(L) || L <= 0){ msg.textContent = 'Ingrese L válido (>0).'; return; }
+  if(!isFinite(I0) || I0 < 0){ msg.textContent = 'Ingrese I₀ válido (≥0).'; return; }
+  if(!isFinite(tmax) || tmax <= 0){ msg.textContent = 'Ingrese t_max válido (>0).'; return; }
+
+  // si dt no es válido, calcular pasos con 200 puntos
+  let steps;
+  if(isFinite(dt) && dt > 0){
+    steps = Math.min(20000, Math.max(4, Math.ceil(tmax / dt)));
+  } else {
+    // fallback: 300 puntos
+    steps = 300;
+  }
+
+  // constante de tiempo
+  const tau = L / R;
+
+  // decidir ventana de vista tView: mostrar hasta min(tmax, 5*tau) pero si tmax << tau, mostrar tmax
+  // Si tmax > 8*tau, mostrar 5*tau en la ventana principal (el resto se mantiene disponible en resultados)
+  let tView;
+  if(tmax <= 8 * tau) tView = tmax;
+  else tView = Math.min(tmax, 5 * tau);
+
+  // generar datos con base en tView para la gráfica (y en total para la tabla)
+  const dataForPlot = [];
+  for(let k=0;k<=steps;k++){
+    const t = (k/steps) * tView;
+    const I = I0 * Math.exp(-t / tau);
+    dataForPlot.push({t, I});
+  }
+
+  // calcular valores numéricos importantes
+  const I_tmax = I0 * Math.exp(-tmax / tau);
+  let t_obj_text = '—';
+  if(isFinite(Iobj)){
+    if(Iobj <= 0 || Iobj > I0) t_obj_text = 'I_obj fuera de rango (0 < I_obj ≤ I₀)';
+    else {
+      const t_obj = -tau * Math.log(Iobj / I0);
+      t_obj_text = t_obj.toFixed(6) + ' s';
+    }
+  }
+
+  // mostrar resultados
+  const res = document.getElementById('resbody');
+  res.innerHTML = `
+    <div><strong>Entradas (convertidas):</strong> R = ${R.toFixed(6)} Ω, L = ${L.toExponential(6)} H, I₀ = ${I0} A, t_max = ${tmax} s</div>
+    <div style="margin-top:8px"><strong>Constante de tiempo:</strong> τ = L / R = ${tau.toExponential(6)} s</div>
+    <div style="margin-top:8px"><strong>Función:</strong> I(t) = ${I0} · e<sup>-t/τ</sup></div>
+    <ul style="margin-top:8px">
+      <li>I(0) = ${I0} A</li>
+      <li>I(t_max) = ${I_tmax.toFixed(6)} A</li>
+      <li>t_objetivo = ${t_obj_text}</li>
+    </ul>
+    <div style="margin-top:8px" class="note">La gráfica muestra hasta ${tView.toFixed(6)} s (ventana didáctica). Si quieres la curva completa, reduce Δt o ajusta t_max.</div>
+  `;
+
+  // dibujar
+  drawCurve(dataForPlot, I0, tView, tau);
+
+}); // fin run
+
+// reset
+document.getElementById('reset').addEventListener('click', ()=>{
+  ['R_val','L_val','I0','tmax','dt','Iobj'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('messages').textContent = '';
+  document.getElementById('resbody').textContent = 'Presiona "Calcular y graficar" para mostrar resultados aquí.';
+  adjustCanvas();
+  ctx.clearRect(0,0,canvas.clientWidth, canvas.clientHeight);
+});
+
+// init: draw empty axes
+adjustCanvas();
+ctx.fillStyle = '#7f9fb6';
+ctx.font = '13px monospace';
+ctx.fillText('Ingrese parámetros y presione Calcular', 18, 22);
+</script>
 </body>
 </html>
